@@ -1,0 +1,37 @@
+```{r}
+#| label: Loading packages
+#| warning: false
+#| message: false
+library(mosaic)   
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(readxl)
+library(writexl)
+library(plotly)
+library(dplyr)
+library(readr)
+library(here)
+```
+
+```{r}
+#| label: Tidying data
+
+# Extracting relevant variables
+
+Cats_Dataset <- dataset |>
+  select(Age, Breed, `Weight (lbs)`, Diet, Stress, `Previous UO`, Difficulty, `Size of u-cath`, Hematuria, `Duration of signs (days)`, `Repeat UO?`) |>
+  rename(Weight = `Weight (lbs)`,
+         Hx = `Previous UO`,
+         C_Size = `Size of u-cath`,
+         Sx_Days = `Duration of signs (days)`,
+         Repeat = `Repeat UO?`)
+```
+
+```{r}
+#| label: Tidying data
+
+
+
+```
+
