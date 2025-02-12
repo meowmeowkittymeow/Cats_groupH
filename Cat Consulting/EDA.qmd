@@ -20,7 +20,7 @@ library(here)
 # Extracting relevant variables
 
 Cats_Dataset <- dataset |>
-  select(Age, Breed, `Weight (lbs)`, Diet, Stress, `Previous UO`, Difficulty, `Size of u-cath`, Hematuria, `Duration of signs (days)`, `Repeat UO?`) |>
+  select(Age, `Weight (lbs)`, `Previous UO`, Difficulty, `Size of u-cath`, `Duration of signs (days)`, `Repeat UO?`) |>
   rename(Weight = `Weight (lbs)`,
          Hx = `Previous UO`,
          C_Size = `Size of u-cath`,
@@ -29,9 +29,29 @@ Cats_Dataset <- dataset |>
 ```
 
 ```{r}
-#| label: Tidying data
+# Were cats who had a previous urinary obstruction more likely to have a more difficult procedure?
+
+Mosaic_Difficulty_Data <- Cats_Dataset |>
+  filter(Hx != "Unknown")
+
+Mosaic_Difficulty <- mosaicplot(data = Mosaic_Difficulty_Data, Difficulty ~ Hx, 
+           color = c("lightblue", "pink"),
+           xlab = "Difficulty",
+           ylab = "Previous UO",
+           main = "Meow")
+```
 
 
+```{r}
+# Did cats with more difficult procedures experience repeat urinary obstructions more often?
 
+Mosaic_Difficulty_Data <- Cats_Dataset |>
+  filter(Repeat != "NA")
+
+Mosaic_Difficulty <- mosaicplot(data = Mosaic_Difficulty_Data, Difficulty ~ Repeat, 
+           color = c("lightblue", "pink", "cornflowerblue"),
+           xlab = "Difficulty",
+           ylab = "Repeat UO",
+           main = "Meow")
 ```
 
