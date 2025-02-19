@@ -189,7 +189,6 @@ ggplot(data = Difficulty_Repeat_Data, aes(x = Difficulty, y = Age)) +
   theme_minimal()
 
 # FINDINGS:
-#           1. Most cats (~87% of those for who there was repeat data) did not get another UO after the procedure.
 #           1. Most cats (~87% of those for whom there was repeat data) did not get another UO after the procedure.
 #           2. The median age of cats who had a subsequent UO was 8.4 years compared to 4.6 among cats who did not get another.
 
