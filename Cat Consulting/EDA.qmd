@@ -217,4 +217,247 @@ ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
   theme_minimal()
 
 ```
+```{r}
+#| label: Loading packages
+#| warning: false
+#| message: false
+library(mosaic)   
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(readxl)
+library(writexl)
+library(plotly)
+library(dplyr)
+library(readr)
+library(gt)
+library(here)
+```
+
+```{r}
+#| label: Tidying data
+dataset <- read_excel("dataset.xls")
+# Extracting relevant variables
+Difficulty_Data <- dataset |>
+  select(Age, `Weight (lbs)`, `Previous UO`, Difficulty, `Size of u-cath`, `Duration of signs (days)`, `Repeat UO?`) |>
+  rename(Weight = `Weight (lbs)`,
+         Hx = `Previous UO`,
+         C_Size = `Size of u-cath`,
+         Sx_Days = `Duration of signs (days)`,
+         Repeat = `Repeat UO?`)
+```
+
+```{r}
+# Were older cats more likely to have a more difficult procedure?
+
+Age_Stats <- Difficulty_Data |>
+  summarise(favstats(Age))
+
+Age_Stats
+
+Difficulty_Age_Stats <- Difficulty_Data |>
+  group_by(Difficulty) |>
+  summarise(favstats(Age))
+
+Difficulty_Age_Stats
+
+Boxplot_Difficulty_Age <- ggplot(Difficulty_Data, aes(x = Difficulty, y = Age)) +
+  geom_boxplot() +
+  labs(x = "Difficulty", y = "Age", title = "Procedure difficulty by age") +
+  theme_minimal()
+
+Boxplot_Difficulty_Age
+
+
+
+# FINDINGS:
+#           1. Most of the cats who were treated for UOs are considered young (< 9). The median age of a treated cat was 4.75 years.
+#           2. Half of the cats with easy procedures were between the ages of 3 and 7 years old.
+#           3. Half of the cats with difficult procedures were between the ages of 3 and 8.8 years old.
+#           4. The median ages for cats with easy and difficult procedures are very similar.
+
+# It appears that there is not a relationship between age and procedure difficulty.
+```
+
+```{r}
+# Were heavier cats more likely to have a more difficult procedure?
+
+Weight_Stats <- Difficulty_Data |>
+  summarise(favstats(Weight))
+
+Weight_Stats
+
+Difficulty_Weight_Stats <- Difficulty_Data |>
+  group_by(Difficulty) |>
+  summarise(favstats(Weight))
+
+Difficulty_Weight_Stats
+
+Boxplot_Difficulty_Weight <- ggplot(Difficulty_Data, aes(x = Difficulty, y = Weight)) +
+  geom_boxplot() +
+  labs(x = "Difficulty", y = "Weight", title = "Procedure difficulty by weight") +
+  theme_minimal()
+
+Boxplot_Difficulty_Weight
+
+# FINDINGS:
+#           1. The median weight of a cat who got a UO procedure was 13.2 lbs.
+#           2. The median weights of cats who had easy and difficult procedures are 13.0 and 13.2 years, respectively.
+#           3. The distributions of weight by procedure difficulty are both unimodal and roughly equally distributed.
+
+# It appears that there is no relationship between weight and procedure difficulty.
+```
+
+
+```{r}
+
+# Are overweight cats more likely to have another urinary obstruction than their healthy-weight counterparts?
+
+Weight_Data <- Difficulty_Data |>
+  mutate(weight_class = ifelse(Weight > 13.2, "Heavier", "Lighter")) |>
+  filter(Repeat != "NA")
+
+counts <- Weight_Data |> 
+  group_by(weight_class, Repeat) |>
+  summarise(count = n()) 
+
+counts
+
+Mosaic_Difficulty <- mosaicplot(data = Weight_Data, weight_class ~ Repeat, 
+           color = c("#ADD8E6", "#AD001D"),
+           xlab = "Weight Class",
+           ylab = "Repeat UO",
+           main = "Repeat urinary obstruction by procedure difficulty")
+
+Boxplot_Repeat_Weight <- ggplot(Weight_Data, aes(x = Repeat, y = Weight)) +
+  geom_boxplot() +
+  labs(x = "Repeat", y = "Weight", title = "Repeat UO by weight") +
+  theme_minimal()
+
+Boxplot_Repeat_Weight
+
+var.test(Weight ~ Repeat, data = Weight_Data)
+
+t.test(Weight ~ Repeat, data = Weight_Data)
+
+#FINDINGS:
+#   There is no significant difference in the average weight of cats who had a repeat UO versus not having a repeat UO
+#
+
+```
+
+
+```{r}
+# Were cats who had a previous urinary obstruction more likely to have a more difficult procedure?
+
+Difficulty_Hx_Data <- Difficulty_Data |>
+  filter(Hx != "Unknown")
+  # Two cats had unknown histories of UO
+
+Difficulty_Hx_Contingency <- addmargins(table(Difficulty_Hx_Data$Difficulty, Difficulty_Hx_Data$Hx))
+
+Difficulty_Hx_Contingency_Props <- addmargins(prop.table(table(Difficulty_Hx_Data$Difficulty, Difficulty_Hx_Data$Hx)))
+
+Difficulty_Hx_Contingency_Props
+
+mosaicplot(data = Difficulty_Hx_Data, Difficulty ~ Hx, 
+           color = c("#ADD8E6", "#AD001D"),
+           xlab = "Difficulty",
+           ylab = "Previous UO",
+           main = "Procedure difficulty by previous urinary obstruction")
+
+
+# FINDINGS:
+#           1. Most of the cats presented without a Hx of UO (~87%).
+#           2. Of the cats who did have a Hx of UO, roughly half had easy procedures.
+#           3. Roughly half (~49%) of the procedures were considered difficult.
+
+# It appears that there is no difference in procedure difficulty among cats that presented with a Hx of UO and those who did not.
+```
+
+
+```{r}
+# Did cats with more difficult procedures tend to experience recurrent UOs?
+
+Difficulty_Repeat_Data <- Difficulty_Data |>
+  filter(Repeat != "NA") |>
+  filter(Difficulty != "NA")
+
+Mosaic_Difficulty <- mosaicplot(data = Difficulty_Repeat_Data, Difficulty ~ Repeat, 
+           color = c("#ADD8E6", "#AD001D"),
+           xlab = "Difficulty",
+           ylab = "Repeat UO",
+           main = "Repeat urinary obstruction by procedure difficulty")
+
+Repeat_Age_Stats <- Difficulty_Repeat_Data |>
+  group_by(Repeat) |>
+  summarise(favstats(Age))
+
+Repeat_Age_Stats
+
+ggplot(data = Difficulty_Repeat_Data, aes(x = Difficulty, y = Age)) + 
+  geom_boxplot() + 
+  facet_wrap( ~ Repeat, ncol = 4) + 
+  labs(title = "Age v. procedure difficulty by repeat UO") + 
+  theme_minimal()
+
+# FINDINGS:
+#           1. Most cats (~87% of those for who there was repeat data) did not get another UO after the procedure.
+#           2. The median age of cats who had a subsequent UO was 8.4 years compared to 4.6 among cats who did not get another.
+#           3. 
+
+# It appears that there may be a relationship between age and repeat UO regardless of procedure difficulty, suggesting that younger cats fare better.
+```
+```{r}
+# Categorizing older vs. younger cats based on median age
+median_age <- median(Difficulty_Data$Age, na.rm = TRUE)
+Difficulty_Data <- Difficulty_Data |> 
+  mutate(Age_Group = ifelse(Age >= median_age, "Older", "Younger"))
+
+# Categorizing large vs. small catheter size based on median
+median_catheter_size <- median(Difficulty_Data$C_Size, na.rm = TRUE)
+Difficulty_Data <- Difficulty_Data |> 
+  mutate(Catheter_Size = ifelse(C_Size >= median_catheter_size, "Large", "Small"))
+
+# Summarizing UO recurrence by age group and catheter size
+UO_Recurrence_Table <- Difficulty_Data |> 
+  group_by(Age_Group, Catheter_Size, Repeat) |> 
+  summarise(Count = n(), .groups = "drop")
+
+print(UO_Recurrence_Table)
+
+# Visualizing the results
+ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~Catheter_Size) +
+  labs(title = "UO Recurrence by Age Group and Catheter Size",
+       x = "Age Group", y = "Proportion",
+       fill = "Repeat UO") +
+  theme_minimal()
+
+```
+```{r}
+# Categorizing older vs. younger cats based on median age
+median_age <- median(Difficulty_Data$Age, na.rm = TRUE)
+Difficulty_Data <- Difficulty_Data |> 
+  mutate(Age_Group = ifelse(Age >= median_age, "Older", "Younger"))
+
+# Summarizing UO recurrence by age group and procedure difficulty
+UO_Recurrence_Table <- Difficulty_Data |> 
+  group_by(Age_Group, Difficulty, Repeat) |> 
+  summarise(Count = n(), .groups = "drop")
+
+print(UO_Recurrence_Table)
+
+
+# Visualizing the results
+ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~Difficulty) +
+  labs(title = "UO Recurrence by Age Group and Procedure Difficulty",
+       x = "Age Group", y = "Proportion",
+       fill = "Repeat UO") +
+  theme_minimal()
+```
+
 
