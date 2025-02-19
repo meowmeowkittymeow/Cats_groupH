@@ -17,10 +17,9 @@ library(here)
 
 ```{r}
 #| label: Tidying data
-
+dataset <- read_excel("dataset.xls")
 # Extracting relevant variables
-
-Cats_Dataset <- dataset |>
+Difficulty_Data <- dataset |>
   select(Age, `Weight (lbs)`, `Previous UO`, Difficulty, `Size of u-cath`, `Duration of signs (days)`, `Repeat UO?`) |>
   rename(Weight = `Weight (lbs)`,
          Hx = `Previous UO`,
@@ -49,6 +48,8 @@ Boxplot_Difficulty_Age <- ggplot(Difficulty_Data, aes(x = Difficulty, y = Age)) 
   theme_minimal()
 
 Boxplot_Difficulty_Age
+
+
 
 # FINDINGS:
 #           1. Most of the cats who were treated for UOs are considered young (< 9). The median age of a treated cat was 4.75 years.
@@ -91,7 +92,7 @@ Boxplot_Difficulty_Weight
 ```{r}
 # Were cats who had a previous urinary obstruction more likely to have a more difficult procedure?
 
-Difficulty_Hx_Data <- Cats_Dataset |>
+Difficulty_Hx_Data <- Difficulty_Data |>
   filter(Hx != "Unknown")
   # Two cats had unknown histories of UO
 
@@ -120,7 +121,7 @@ mosaicplot(data = Difficulty_Hx_Data, Difficulty ~ Hx,
 ```{r}
 # Did cats with more difficult procedures tend to experience recurrent UOs?
 
-Difficulty_Repeat_Data <- Cats_Dataset |>
+Difficulty_Repeat_Data <- Difficulty_Data |>
   filter(Repeat != "NA") |>
   filter(Difficulty != "NA")
 
