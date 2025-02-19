@@ -89,6 +89,45 @@ Boxplot_Difficulty_Weight
 # It appears that there is no relationship between weight and procedure difficulty.
 ```
 
+
+```{r}
+
+# Are overweight cats more likely to have another urinary obstruction than their healthy-weight counterparts?
+
+Weight_Data <- Difficulty_Data |>
+  mutate(weight_class = ifelse(Weight > 13.2, "Heavier", "Lighter")) |>
+  filter(Repeat != "NA")
+
+counts <- Weight_Data |> 
+  group_by(weight_class, Repeat) |>
+  summarise(count = n()) 
+
+counts
+
+Mosaic_Difficulty <- mosaicplot(data = Weight_Data, weight_class ~ Repeat, 
+           color = c("#ADD8E6", "#AD001D"),
+           xlab = "Weight Class",
+           ylab = "Repeat UO",
+           main = "Repeat urinary obstruction by procedure difficulty")
+
+Boxplot_Repeat_Weight <- ggplot(Weight_Data, aes(x = Repeat, y = Weight)) +
+  geom_boxplot() +
+  labs(x = "Repeat", y = "Weight", title = "Repeat UO by weight") +
+  theme_minimal()
+
+Boxplot_Repeat_Weight
+
+var.test(Weight ~ Repeat, data = Weight_Data)
+
+t.test(Weight ~ Repeat, data = Weight_Data)
+
+#FINDINGS:
+#   There is no significant difference in the average weight of cats who had a repeat UO versus not having a repeat UO
+#
+
+```
+
+
 ```{r}
 # Were cats who had a previous urinary obstruction more likely to have a more difficult procedure?
 
