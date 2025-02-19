@@ -215,6 +215,42 @@ ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
        x = "Age Group", y = "Proportion",
        fill = "Repeat UO") +
   theme_minimal()
+# Load necessary libraries
+library(gt)
+
+# Categorizing older vs. younger cats based on median age
+median_age <- median(Difficulty_Data$Age, na.rm = TRUE)
+Difficulty_Data <- Difficulty_Data |> 
+  mutate(Age_Group = ifelse(Age >= median_age, "Older", "Younger"))
+
+# Summarizing UO recurrence by age group and procedure difficulty
+UO_Recurrence_Table <- Difficulty_Data |> 
+  group_by(Age_Group, Difficulty, Repeat) |> 
+  summarise(Count = n(), .groups = "drop")
+
+# Print a well-formatted table
+UO_Recurrence_Table |> 
+  gt() |> 
+  tab_header(
+    title = md("**UO Recurrence by Age Group and Procedure Difficulty**"),
+    subtitle = md("*Analyzing the likelihood of urinary obstruction recurrence*")
+  ) |> 
+  cols_label(
+    Age_Group = md("**Age Category**"),
+    Difficulty = md("**Procedure Difficulty**"),
+    Repeat = md("**Repeat UO**"),
+    Count = md("**Number of Cases**")
+  ) |> 
+  fmt_number(columns = Count, decimals = 0) |> 
+  tab_options(
+    table.font.size = "medium",
+    column_labels.font.weight = "bold",
+    heading.align = "center",
+    column_labels.background.color = "lightgray",
+    row.striping.include_table_body = TRUE,
+    row.striping.background_color = "#f2f2f2"
+  ) |> 
+  opt_table_lines()
 
 ```
 
@@ -241,6 +277,38 @@ ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
        x = "Age Group", y = "Proportion",
        fill = "Repeat UO") +
   theme_minimal()
+# Load necessary libraries
+library(gt)
+
+# Categorizing older vs. younger cats based on median age
+median_age <- median(Difficulty_Data$Age, na.rm = TRUE)
+Difficulty_Data <- Difficulty_Data |> 
+  mutate(Age_Group = ifelse(Age >= median_age, "Older", "Younger"))
+
+# Summarizing UO recurrence by age group and procedure difficulty
+UO_Recurrence_Table <- Difficulty_Data |> 
+  group_by(Age_Group, Difficulty, Repeat) |> 
+  summarise(Count = n(), .groups = "drop")
+
+# Print a cleaner table
+UO_Recurrence_Table |> 
+  gt() |> 
+  tab_header(
+    title = "UO Recurrence by Age Group and Procedure Difficulty",
+    subtitle = "Analyzing the likelihood of urinary obstruction recurrence"
+  ) |> 
+  cols_label(
+    Age_Group = "Age Category",
+    Difficulty = "Procedure Difficulty",
+    Repeat = "Repeat UO",
+    Count = "Number of Cases"
+  ) |> 
+  fmt_number(columns = Count, decimals = 0) |> 
+  tab_options(
+    table.font.size = "medium",
+    column_labels.font.weight = "bold",
+    heading.align = "center"
+  )
 ```
 
 
