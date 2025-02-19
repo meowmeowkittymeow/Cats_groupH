@@ -218,34 +218,7 @@ ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
 
 ```
 
-```{r}
-# Categorizing older vs. younger cats based on median age
-median_age <- median(Difficulty_Data$Age, na.rm = TRUE)
-Difficulty_Data <- Difficulty_Data |> 
-  mutate(Age_Group = ifelse(Age >= median_age, "Older", "Younger"))
 
-# Categorizing large vs. small catheter size based on median
-median_catheter_size <- median(Difficulty_Data$C_Size, na.rm = TRUE)
-Difficulty_Data <- Difficulty_Data |> 
-  mutate(Catheter_Size = ifelse(C_Size >= median_catheter_size, "Large", "Small"))
-
-# Summarizing UO recurrence by age group and catheter size
-UO_Recurrence_Table <- Difficulty_Data |> 
-  group_by(Age_Group, Catheter_Size, Repeat) |> 
-  summarise(Count = n(), .groups = "drop")
-
-print(UO_Recurrence_Table)
-
-# Visualizing the results
-ggplot(Difficulty_Data, aes(x = Age_Group, fill = Repeat)) +
-  geom_bar(position = "fill") +
-  facet_wrap(~Catheter_Size) +
-  labs(title = "UO Recurrence by Age Group and Catheter Size",
-       x = "Age Group", y = "Proportion",
-       fill = "Repeat UO") +
-  theme_minimal()
-
-```
 ```{r}
 # Categorizing older vs. younger cats based on median age
 median_age <- median(Difficulty_Data$Age, na.rm = TRUE)
