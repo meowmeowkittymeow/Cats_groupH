@@ -1,0 +1,194 @@
+---
+title: "Feline Urinary Obstruction Data Analysis"
+date: "February 21, 2024"
+output:
+  pdf_document
+header-includes:
+  - \pagenumbering{gobble}
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r, echo=FALSE}
+#| label: Loading packages
+#| warning: false
+#| message: false
+library(mosaic)  
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(readxl)
+library(writexl)
+library(plotly)
+library(dplyr)
+library(readr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: Tidying data
+dataset <- read_excel("dataset.xls")
+# Extracting relevant variables
+Difficulty_Data <- dataset |>
+  select(Age, `Weight (lbs)`, `Previous UO`, Difficulty, `Size of u-cath`, `Duration of signs (days)`, `Repeat UO?`) |>
+  rename(Weight = `Weight (lbs)`,
+         Hx = `Previous UO`,
+         C_Size = `Size of u-cath`,
+         Sx_Days = `Duration of signs (days)`,
+         Repeat = `Repeat UO?`)
+
+```
+
+## I. Introduction
+
+This report presents the results of an Exploratory Data Analysis (EDA)
+conducted on a dataset related to feline urinary obstruction (UO). The
+objective is to identify patterns and relationships in the data that can
+help answer key research questions concerning factors influencing UO
+procedure difficulty, recurrence, and post-treatment outcomes.
+
+The dataset comprises 105 observations and 93 variables, including
+numerical and categorical attributes related to patient demographics,
+medical history, treatment procedures, and clinical outcomes. The
+primary goal of this analysis is to extract insights that can inform
+veterinary decision-making and improve patient care.
+
+We are looking at a few variables to observe their relation to repeat
+Urinary Obstructions in cats. These variables are: `Weight`, `Age`,
+`History`, and `Difficulty`.
+
+## II. Research Questions and Findings
+
+#### **Were overweight patients more likely to have another urinary obstruction than their healthy-weight counterparts?**
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+Difficulty_Data |> summarise(favstats(Weight))
+
+```
+
+   
+
+We found that there overweight cats were not more likely to have a
+repeat UO. We separated the data into two weight classes under the
+variable name `weight_class`. The 3rd quartile of weights of patients in
+the dataset was 15.4 lbs, so we grouped cats who were over that
+threshold as `Heavy` and those under the threshold as `Not Heavy`. The
+proportion of cats who had a repeat UO and cats who didn't in both
+groups was roughly the same, pointing towards no correlation.
+
+```{r, echo=FALSE, message=FALSE, fig.width=6, fig.height=4}
+Weight_Data <- Difficulty_Data |>
+  mutate(weight_class = ifelse(Weight >= 15.4, "Heavy", "Not Heavy")) |>
+  filter(Repeat != "NA")
+
+counts <- Weight_Data |> 
+  group_by(weight_class, Repeat) |>
+  summarise(count = n())
+
+counts <- setNames(counts, c("Weight Class", "Repeat UO", "Number of Cases"))
+kable(counts, format ="latex") |>
+        kable_classic(full_width = FALSE, latex_options = c("hold_position"))
+  
+```
+
+#### **Were patients with histories of urinary obstruction more likely to have a difficult procedure?**
+
+    We found no connection between cats with previous instances of
+urinary obstruction and having a greater chance of having a difficult
+procedure. The number of cats who had a difficult procedure and those
+who had an easy one were nearly the same. Among the two groups the
+proportion of cats who had a history of UO was very similar. 12.6% of
+the cats had history, and around 46% of those cats had a difficult
+procedure.
+
+```{r, echo=FALSE, message=FALSE, results='hide', fig.width=6, fig.height=4}
+Difficulty_Hx_Data <- Difficulty_Data |>
+  filter(Hx != "Unknown")
+  # Two cats had unknown histories of UO
+
+Repeat_Hx_Stats <- Difficulty_Hx_Data |>
+  group_by(Hx, Difficulty) |>
+  summarise(count =n())
+
+Repeat_Hx_Stats
+
+Difficulty_Hx_Contingency <- addmargins(table(Difficulty_Hx_Data$Difficulty, Difficulty_Hx_Data$Hx))
+
+Difficulty_Hx_Contingency_Props <- addmargins(prop.table(table(Difficulty_Hx_Data$Difficulty, Difficulty_Hx_Data$Hx)))
+
+Difficulty_Hx_Contingency_Props
+
+mosaicplot(data = Difficulty_Hx_Data, Difficulty ~ Hx, 
+           color = c("#ADD8E6", "#AD001D"),
+           xlab = "Difficulty",
+           ylab = "Previous UO",
+           main = "Procedure difficulty by previous urinary obstruction")
+
+```
+
+#### **Were patients that experienced difficult procedures more likely to have another urinary obstruction?**
+\
+Patients that experienced difficult procedures were not more likely to
+have another urinary obstruction. The proportion of cats who had repeat
+urinary obstruction as opposed to cats who did not have one was
+extremely similar in both difficulty groups.
+
+```{r, echo=FALSE, message=FALSE, results='hide', fig.width=6, fig.height=4}
+
+Difficulty_Repeat_Data <- Difficulty_Data |>
+  filter(Repeat != "NA") |>
+  filter(Difficulty != "NA")
+
+Repeat_Age_Stats <- Difficulty_Repeat_Data |>
+  group_by(Repeat, Difficulty) |>
+  summarise(favstats(Age)) |>
+  select(Repeat, Difficulty, median, mean, n)
+
+Repeat_Age_Stats
+
+Difficulty_Repeat_Data |>
+  group_by(Repeat) |>
+  summarise(fav_stats(Age))
+```
+
+```{r, echo=FALSE, message=FALSE, fig.width=6, fig.height=4}
+Repeat_Age_Stats <- setNames(Repeat_Age_Stats, c("Repeat", "Difficulty", "Median Age", "Mean Age", "Number of Cases"))
+kable(Repeat_Age_Stats, format ="latex") |>
+        kable_classic(full_width = FALSE, latex_options = c("hold_position"))
+
+```
+
+However, we did observe a relationship between a cat's age and having
+repeat urinary obstruction regardless of the procedure difficulty. Both
+the median and mean age of cats who didn't have a repeat UO was lower
+than cats who did have a repeat, regardless of the difficulty group they
+were in. Other analysis methods (like a simple logistic regression)
+reinforce this relationship. In a simple model we created to predict the probability of a cat having a repeat OU, where age was the only variable taken into account, age had a significant effect on the odds of
+having a repeat OU. For every additional year a cat lives, it's odds of
+having a repeat urinary obstruction increase by around 29%.
+
+```{r, echo=FALSE, message=FALSE, results='hide', fig.width=6, fig.height=4}
+Difficulty_Data$Repeat_Binary <- ifelse(Difficulty_Data$Repeat == "Yes", 1, 0)
+
+model <- glm(Repeat_Binary ~ Age, data = Difficulty_Data, family = binomial)
+summary(model)
+
+#odds ratio
+exp(coef(model))
+
+ggplot(data = Difficulty_Repeat_Data, aes(x = Difficulty, y = Age, fill = Repeat)) + 
+  geom_boxplot() + 
+  facet_wrap( ~ Repeat, ncol = 4) + 
+  scale_fill_manual(values = c("#ADD8E6", "#AD001D")) +
+  labs(title = "Age v. procedure difficulty by repeat UO") + 
+  theme_minimal()
+
+# FINDINGS:
+#           1. Most cats (~87% of those for whom there was repeat data) did not get another UO after the procedure.
+#           2. The median age of cats who had a subsequent UO was 8.4 years compared to 4.6 among cats who did not get another.
+
+# It appears that there may be a relationship between age and repeat UO regardless of procedure difficulty, suggesting that younger cats fare better.
+```

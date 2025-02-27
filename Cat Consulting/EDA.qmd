@@ -92,6 +92,9 @@ Boxplot_Difficulty_Weight
 ```{r}
 # Are overweight cats more likely to have another urinary obstruction than their healthy-weight counterparts?
 
+Difficulty_Data |> 
+  summarise(favstats(Weight))
+
 Weight_Data <- Difficulty_Data |>
   mutate(weight_class = ifelse(Weight >= 15.4, "Heavier", "Lighter")) |>
   filter(Repeat != "NA")
@@ -312,4 +315,9 @@ UO_Recurrence_Table |>
     column_labels.font.weight = "bold",
     heading.align = "center"
   )
+```
+
+```{r}
+aov_result <- aov(data = Difficulty_Data, Age ~ Repeat)
+summary(aov_result)
 ```
