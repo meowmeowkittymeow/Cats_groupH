@@ -71,9 +71,9 @@ Difficulty_Data |> summarise(favstats(Weight))
 
    
 
-We found that there overweight cats were not more likely to have a
+We found that the overweight cats were not more likely to have a
 repeat UO. We separated the data into two weight classes under the
-variable name `weight_class`. The 3rd quartile of weights of patients in
+variable name `weight_class`. The 3rd quartile of patient's weights in
 the dataset was 15.4 lbs, so we grouped cats who were over that
 threshold as `Heavy` and those under the threshold as `Not Heavy`. The
 proportion of cats who had a repeat UO and cats who didn't in both
@@ -98,10 +98,10 @@ kable(counts, format ="latex") |>
 
     We found no connection between cats with previous instances of
 urinary obstruction and having a greater chance of having a difficult
-procedure. The number of cats who had a difficult procedure and those
-who had an easy one were nearly the same. Among the two groups the
-proportion of cats who had a history of UO was very similar. 12.6% of
-the cats had history, and around 46% of those cats had a difficult
+procedure. The number of cats with a difficult procedure and those
+with an easy one were nearly the same. Among the two groups the
+proportion of cats with a history of UO was very similar. 12.6% of
+the cats had a history, and around 46% of those cats had a difficult
 procedure.
 
 ```{r, echo=FALSE, message=FALSE, results='hide', fig.width=6, fig.height=4}
@@ -131,7 +131,7 @@ mosaicplot(data = Difficulty_Hx_Data, Difficulty ~ Hx,
 
 #### **Were patients that experienced difficult procedures more likely to have another urinary obstruction?**
 \
-Patients that experienced difficult procedures were not more likely to
+Patients who experienced difficult procedures were not more likely to
 have another urinary obstruction. The proportion of cats who had repeat
 urinary obstruction as opposed to cats who did not have one was
 extremely similar in both difficulty groups.
@@ -161,13 +161,13 @@ kable(Repeat_Age_Stats, format ="latex") |>
 
 ```
 
-However, we did observe a relationship between a cat's age and having
+However, we did observe a relationship between a cat's age and
 repeat urinary obstruction regardless of the procedure difficulty. Both
-the median and mean age of cats who didn't have a repeat UO was lower
+the median and mean age of cats who didn't have a repeat UO were lower
 than cats who did have a repeat, regardless of the difficulty group they
 were in. Other analysis methods (like a simple logistic regression)
 reinforce this relationship. In a simple model we created to predict the probability of a cat having a repeat OU, where age was the only variable taken into account, age had a significant effect on the odds of
-having a repeat OU. For every additional year a cat lives, it's odds of
+having a repeat OU. For every additional year a cat lives, its odds of
 having a repeat urinary obstruction increase by around 29%.
 
 ```{r, echo=FALSE, message=FALSE, results='hide', fig.width=6, fig.height=4}
